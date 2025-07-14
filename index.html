@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR AI Chatbot</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter font for a clean look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Custom scrollbar for chat messages */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+            background: #e5e7eb; /* Lighter track */
+            border-radius: 10px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #9ca3af; /* Gray thumb */
+            border-radius: 10px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* Darker gray on hover */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="relative w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col h-[80vh] md:h-[70vh] lg:h-[60vh]">
+        <!-- Chat Header -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 text-center text-2xl font-semibold rounded-t-xl shadow-md">
+            HR Assistant Chatbot
+        </div>
+
+        <!-- Chat Messages Display Area -->
+        <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50">
+            <!-- Initial Bot Message -->
+            <div class="flex justify-start">
+                <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] shadow-sm">
+                    Hello! I'm your HR Assistant. How can I help you today?
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="hidden absolute inset-x-0 bottom-20 flex justify-center p-2">
+            <div class="flex items-center space-x-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-full shadow-lg">
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
+                <span>Typing...</span>
+            </div>
+        </div>
+
+        <!-- Chat Input Area -->
+        <div class="p-4 bg-white border-t border-gray-200 flex items-center rounded-b-xl shadow-inner">
+            <input
+                type="text"
+                id="user-input"
+                class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 mr-3"
+                placeholder="Type your message here..."
+                autocomplete="off"
+            >
+            <button
+                id="send-button"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+                Send
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Get references to DOM elements
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        // Initialize chat history for the AI model
+        let chatHistory = [];
+
+        /**
+         * Displays a message in the chat interface.
+         * @param {string} message - The message content.
+         * @param {string} sender - 'user' or 'bot'.
+         */
+        function displayMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('flex', sender === 'user' ? 'justify-end' : 'justify-start');
+
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add(
+                'p-3',
+                'rounded-lg',
+                'max-w-[80%]',
+                'shadow-sm',
+                sender === 'user' ? 'bg-indigo-600 text-white' : 'bg-blue-100 text-blue-800'
+            );
+            messageBubble.textContent = message;
+            messageDiv.appendChild(messageBubble);
+            chatMessages.appendChild(messageDiv);
+
+            // Scroll to the bottom of the chat
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        /**
+         * Shows or hides the loading indicator.
+         * @param {boolean} show - True to show, false to hide.
+         */
+        function toggleLoading(show) {
+            if (show) {
+                loadingIndicator.classList.remove('hidden');
+                userInput.disabled = true;
+                sendButton.disabled = true;
+            } else {
+                loadingIndicator.classList.add('hidden');
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                userInput.focus(); // Focus input after response
+            }
+        }
+
+        /**
+         * Sends the user's message and gets a response from the AI.
+         */
+        async function sendMessage() {
+            const prompt = userInput.value.trim();
+            if (prompt === '') return; // Don't send empty messages
+
+            displayMessage(prompt, 'user'); // Display user's message
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] }); // Add to chat history
+            userInput.value = ''; // Clear input field
+
+            toggleLoading(true); // Show loading indicator
+
+            try {
+                const apiKey = ""; // API key is automatically provided in runtime by Canvas
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const payload = { contents: chatHistory };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    displayMessage('Oops! Something went wrong. Please try again later.', 'bot');
+                    chatHistory.push({ role: "model", parts: [{ text: 'Oops! Something went wrong. Please try again later.' }] });
+                    return;
+                }
+
+                const result = await response.json();
+
+                let botResponseText = 'I am sorry, I could not generate a response at this time.';
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    botResponseText = result.candidates[0].content.parts[0].text;
+                } else {
+                    console.warn('Unexpected API response structure:', result);
+                }
+
+                displayMessage(botResponseText, 'bot'); // Display bot's response
+                chatHistory.push({ role: "model", parts: [{ text: botResponseText }] }); // Add to chat history
+
+            } catch (error) {
+                console.error('Error fetching AI response:', error);
+                displayMessage('An error occurred while connecting to the AI. Please check your network.', 'bot');
+                chatHistory.push({ role: "model", parts: [{ text: 'An error occurred while connecting to the AI. Please check your network.' }] });
+            } finally {
+                toggleLoading(false); // Hide loading indicator
+            }
+        }
+
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Focus on the input field when the page loads
+        window.onload = () => {
+            userInput.focus();
+        };
+    </script>
+</body>
+</html>
