@@ -42,7 +42,7 @@
             <!-- Initial Bot Message -->
             <div class="flex justify-start">
                 <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] shadow-sm">
-                    Hello! I'm your HR Assistant. How can I help you today? Try asking about "leave policy", "expense claims", or "birthday leave".
+                    Hello! I'm your HR Assistant. How can I help you today? Remember to replace "YOUR_GEMINI_API_KEY_HERE" in the code with your actual API key for the chatbot to work on your website.
                 </div>
             </div>
         </div>
@@ -222,12 +222,22 @@
             }
 
             // Add user's prompt (or the enhanced AI prompt) to chat history
-            // Only add the full AI prompt if a policy was found, otherwise just the user's original prompt.
-            // This helps keep the chat history more concise for general queries.
             chatHistory.push({ role: "user", parts: [{ text: aiPrompt }] });
 
             try {
-                const apiKey = ""; // API key is automatically provided in runtime by Canvas
+                // --- IMPORTANT: For hosting on GitHub Pages, you MUST replace this with your actual Gemini API Key ---
+                // Get your API key from Google AI Studio: https://aistudio.google.com/app/apikey
+                // For production, use a backend proxy to keep your API key secure.
+                const apiKey = "YOUR_GEMINI_API_KEY_HERE"; // Replace with your actual API Key
+
+                if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
+                    console.error("API Key is missing or not replaced. Please get your API key from Google AI Studio and replace 'YOUR_GEMINI_API_KEY_HERE' in the code.");
+                    displayMessage('Error: Gemini API Key is missing. Please check the console for instructions.', 'bot');
+                    chatHistory.push({ role: "model", parts: [{ text: 'Error: Gemini API Key is missing. Please check the console for instructions.' }] });
+                    toggleLoading(false);
+                    return;
+                }
+
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                 const payload = { contents: chatHistory };
@@ -241,8 +251,14 @@
                 if (!response.ok) {
                     const errorData = await response.json();
                     console.error('API Error:', errorData);
-                    displayMessage('Oops! Something went wrong. Please try again later.', 'bot');
-                    chatHistory.push({ role: "model", parts: [{ text: 'Oops! Something went wrong. Please try again later.' }] });
+                    // Provide a more specific message if it's an API key related error (e.g., 403 Forbidden)
+                    if (response.status === 403 || response.status === 401) {
+                        displayMessage('Authentication Error: Please check your Gemini API Key. It might be invalid or missing permissions.', 'bot');
+                        chatHistory.push({ role: "model", parts: [{ text: 'Authentication Error: Please check your Gemini API Key. It might be invalid or missing permissions.' }] });
+                    } else {
+                        displayMessage('Oops! Something went wrong with the AI service. Please try again later.', 'bot');
+                        chatHistory.push({ role: "model", parts: [{ text: 'Oops! Something went wrong with the AI service. Please try again later.' }] }]);
+                    }
                     return;
                 }
 
@@ -256,6 +272,7 @@
                     botResponseText = result.candidates[0].content.parts[0].text;
                 } else {
                     console.warn('Unexpected API response structure:', result);
+                    botResponseText = 'I received an unexpected response from the AI. Please try rephrasing your question.';
                 }
 
                 displayMessage(botResponseText, 'bot'); // Display bot's response
@@ -263,8 +280,8 @@
 
             } catch (error) {
                 console.error('Error fetching AI response:', error);
-                displayMessage('An error occurred while connecting to the AI. Please check your network.', 'bot');
-                chatHistory.push({ role: "model", parts: [{ text: 'An error occurred while connecting to the AI. Please check your network.' }] });
+                displayMessage('An error occurred while connecting to the AI. Please check your network connection.', 'bot');
+                chatHistory.push({ role: "model", parts: [{ text: 'An error occurred while connecting to the AI. Please check your network connection.' }] });
             } finally {
                 toggleLoading(false); // Hide loading indicator
             }
