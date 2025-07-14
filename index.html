@@ -4,26 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HR AI Chatbot</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS CDN for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter font for a clean look -->
+    <!-- Google Fonts - Inter for a clean, professional look -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Base font family for the entire body */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Light gray background */
+            background-color: #f3f4f6; /* Light gray background for the page */
         }
-        /* Custom scrollbar for chat messages */
+        /* Custom scrollbar styling for the chat messages area */
         .chat-messages::-webkit-scrollbar {
-            width: 8px;
+            width: 8px; /* Width of the scrollbar */
         }
         .chat-messages::-webkit-scrollbar-track {
-            background: #e5e7eb; /* Lighter track */
-            border-radius: 10px;
+            background: #e5e7eb; /* Color of the scrollbar track */
+            border-radius: 10px; /* Rounded corners for the track */
         }
         .chat-messages::-webkit-scrollbar-thumb {
-            background: #9ca3af; /* Gray thumb */
-            border-radius: 10px;
+            background: #9ca3af; /* Color of the scrollbar thumb */
+            border-radius: 10px; /* Rounded corners for the thumb */
         }
         .chat-messages::-webkit-scrollbar-thumb:hover {
             background: #6b7280; /* Darker gray on hover */
@@ -31,23 +32,26 @@
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
+    <!-- Main container for the chatbot interface -->
     <div class="relative w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col h-[80vh] md:h-[70vh] lg:h-[60vh]">
-        <!-- Chat Header -->
+        <!-- Chat Header Section -->
         <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 text-center text-2xl font-semibold rounded-t-xl shadow-md">
             HR Assistant Chatbot
         </div>
 
         <!-- Chat Messages Display Area -->
-        <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50">
-            <!-- Initial Bot Message -->
+        <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50 chat-messages">
+            <!-- Initial welcome message from the bot -->
             <div class="flex justify-start">
                 <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] shadow-sm">
-                    Hello! I'm your HR Assistant. How can I help you today? 
+                    Hello! I'm your HR Assistant. How can I help you today? Try asking about "leave policy", "expense claims", or "work from home".
+                    <br><br>
+                    <span class="font-bold text-red-600">IMPORTANT:</span> For this chatbot to work on your website, you MUST replace "YOUR_GEMINI_API_KEY_HERE" in the code with your actual Gemini API key.
                 </div>
             </div>
         </div>
 
-        <!-- Loading Indicator -->
+        <!-- Loading Indicator for AI responses -->
         <div id="loading-indicator" class="hidden absolute inset-x-0 bottom-20 flex justify-center p-2">
             <div class="flex items-center space-x-2 bg-gray-200 text-gray-700 px-4 py-2 rounded-full shadow-lg">
                 <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
@@ -74,21 +78,22 @@
     </div>
 
     <script type="module">
-        // Get references to DOM elements
+        // Get references to DOM elements for manipulation
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const loadingIndicator = document.getElementById('loading-indicator');
 
-        // Initialize chat history for the AI model
+        // Initialize chat history array to maintain conversation context for the AI model
         let chatHistory = [];
 
         // --- HR Policies Knowledge Base ---
-        // This is a simple, hardcoded knowledge base for demonstration.
-        // In a real application, this data would come from a database or external HR system.
+        // This object serves as a simple, hardcoded knowledge base for HR policies.
+        // In a real-world application, this data would ideally be fetched from a secure database
+        // or an external HR information system for better scalability and management.
         const hrPolicies = {
             "leave policy": {
-                keywords: ["leave", "vacation", "sick leave", "annual leave", "time off"],
+                keywords: ["leave", "vacation", "sick leave", "annual leave", "time off", "days off"],
                 content: `
                     **Annual Leave Policy:** Employees are entitled to 20 days of annual leave per calendar year, accrued monthly.
                     **Sick Leave Policy:** Employees are entitled to 10 days of paid sick leave per calendar year. A medical certificate is required for absences exceeding 3 consecutive days.
@@ -97,7 +102,7 @@
                 `
             },
             "expense claims": {
-                keywords: ["expense", "reimbursement", "claim", "travel expenses"],
+                keywords: ["expense", "reimbursement", "claim", "travel expenses", "submit expenses"],
                 content: `
                     **Expense Claim Policy:** Employees can claim reimbursement for business-related expenses.
                     **Procedure:** All claims must be submitted within 30 days of the expense incurrence via the company's expense management system. Original receipts are mandatory.
@@ -106,7 +111,7 @@
                 `
             },
             "code of conduct": {
-                keywords: ["code of conduct", "ethics", "behavior", "rules"],
+                keywords: ["code of conduct", "ethics", "behavior", "rules", "company rules", "misconduct"],
                 content: `
                     **Code of Conduct Policy:** Our company is committed to maintaining a respectful, safe, and ethical work environment.
                     **Key Principles:** This includes treating colleagues with respect, maintaining confidentiality, avoiding conflicts of interest, and adhering to all company policies and laws.
@@ -114,7 +119,7 @@
                 `
             },
             "work from home policy": {
-                keywords: ["wfh", "work from home", "remote work", "hybrid schedule"],
+                keywords: ["wfh", "work from home", "remote work", "hybrid schedule", "working remotely"],
                 content: `
                     **Work From Home (WFH) Policy:** Employees may work remotely up to 2 days per week, subject to manager approval.
                     **Eligibility:** Requires a stable internet connection and a conducive home office environment.
@@ -123,7 +128,7 @@
                 `
             },
             "onboarding process": {
-                keywords: ["onboarding", "new hire", "first day", "orientation"],
+                keywords: ["onboarding", "new hire", "first day", "orientation", "new employee"],
                 content: `
                     **Onboarding Process:** Welcome to the team! Your onboarding process will include:
                     1.  **Day 1:** HR orientation, IT setup, team introductions.
@@ -133,32 +138,48 @@
                 `
             },
             "birthday leave": {
-                keywords: ["birthday leave", "birthday off", "birthday holiday"],
+                keywords: ["birthday leave", "birthday off", "birthday holiday", "my birthday"],
                 content: `
                     **Birthday Leave Policy:** Employees are entitled to 1 day of paid leave for their birthday each calendar year.
                     **Usage:** This leave must be taken within the month of your birthday. Please coordinate with your manager.
                 `
             },
             "parent care leave": {
-                keywords: ["parent care leave", "elderly care leave", "caring for parents"],
+                keywords: ["parent care leave", "elderly care leave", "caring for parents", "sick parent"],
                 content: `
                     **Parent Care Leave Policy:** Employees are entitled to 3 days of paid leave per calendar year to care for their parents or elderly dependents.
                     **Purpose:** This leave is for situations requiring direct care, such as medical appointments or emergencies.
                 `
             },
             "maternity leave": {
-                keywords: ["maternity leave", "new mother leave", "pregnancy leave"],
+                keywords: ["maternity leave", "new mother leave", "pregnancy leave", "expecting a baby"],
                 content: `
                     **Maternity Leave Policy:** Expectant mothers are entitled to 16 weeks of paid maternity leave.
                     **Eligibility:** Specific eligibility criteria apply, including length of service. Please consult HR for full details.
                 `
             },
             "shared parental leave": {
-                keywords: ["shared parental leave", "paternity leave", "new parent leave", "shared leave"],
+                keywords: ["shared parental leave", "paternity leave", "new parent leave", "shared leave", "parental leave"],
                 content: `
                     **Shared Parental Leave Policy:** Eligible parents can share up to 6 weeks of their parental leave entitlement.
                     **Flexibility:** This allows parents to share care for their child in the first year after birth or adoption.
                     **Application:** Joint application with your partner is required. Please contact HR for detailed guidance.
+                `
+            },
+            "medical benefits": {
+                keywords: ["medical benefits", "health insurance", "doctor visit", "dental", "vision"],
+                content: `
+                    **Medical Benefits Policy:** Our comprehensive medical benefits package includes health, dental, and vision insurance.
+                    **Enrollment:** Enrollment typically occurs during your onboarding period or during annual open enrollment.
+                    **Details:** For full details on coverage, deductibles, and co-pays, please refer to the benefits guide on the HR portal or contact our benefits administrator.
+                `
+            },
+            "performance review": {
+                keywords: ["performance review", "annual review", "feedback", "appraisal"],
+                content: `
+                    **Performance Review Policy:** Performance reviews are conducted annually to assess employee performance, set goals, and discuss career development.
+                    **Process:** This typically involves a self-assessment, manager review, and a one-on-one discussion.
+                    **Purpose:** To provide constructive feedback, recognize achievements, and align individual goals with company objectives.
                 `
             }
         };
@@ -170,121 +191,132 @@
          */
         function displayMessage(message, sender) {
             const messageDiv = document.createElement('div');
+            // Apply Tailwind classes for message alignment based on sender
             messageDiv.classList.add('flex', sender === 'user' ? 'justify-end' : 'justify-start');
 
             const messageBubble = document.createElement('div');
+            // Apply Tailwind classes for message bubble styling
             messageBubble.classList.add(
                 'p-3',
                 'rounded-lg',
-                'max-w-[80%]',
-                'shadow-sm',
+                'max-w-[80%]', /* Limit bubble width */
+                'shadow-sm', /* Subtle shadow for depth */
                 sender === 'user' ? 'bg-indigo-600 text-white' : 'bg-blue-100 text-blue-800'
             );
-            messageBubble.innerHTML = message; // Use innerHTML to render bold text from policies
+            messageBubble.innerHTML = message; // Use innerHTML to render Markdown (e.g., bold text)
             messageDiv.appendChild(messageBubble);
             chatMessages.appendChild(messageDiv);
 
-            // Scroll to the bottom of the chat
+            // Automatically scroll to the bottom of the chat to show the latest message
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         /**
-         * Shows or hides the loading indicator.
-         * @param {boolean} show - True to show, false to hide.
+         * Shows or hides the loading indicator and controls input/button state.
+         * @param {boolean} show - True to show the loading indicator, false to hide it.
          */
         function toggleLoading(show) {
             if (show) {
-                loadingIndicator.classList.remove('hidden');
-                userInput.disabled = true;
-                sendButton.disabled = true;
+                loadingIndicator.classList.remove('hidden'); // Show the loading indicator
+                userInput.disabled = true; // Disable input field
+                sendButton.disabled = true; // Disable send button
             } else {
-                loadingIndicator.classList.add('hidden');
-                userInput.disabled = false;
-                sendButton.disabled = false;
-                userInput.focus(); // Focus input after response
+                loadingIndicator.classList.add('hidden'); // Hide the loading indicator
+                userInput.disabled = false; // Enable input field
+                sendButton.disabled = false; // Enable send button
+                userInput.focus(); // Return focus to the input field for next message
             }
         }
 
         /**
-         * Sends the user's message and gets a response from the AI.
+         * Sends the user's message to the AI and displays the response.
          */
         async function sendMessage() {
-            const prompt = userInput.value.trim();
-            if (prompt === '') return; // Don't send empty messages
+            const prompt = userInput.value.trim(); // Get user input and remove leading/trailing whitespace
+            if (prompt === '') return; // Do nothing if the input is empty
 
-            displayMessage(prompt, 'user'); // Display user's message
-            userInput.value = ''; // Clear input field
+            displayMessage(prompt, 'user'); // Display the user's message in the chat
+            userInput.value = ''; // Clear the input field immediately
 
-            toggleLoading(true); // Show loading indicator
+            toggleLoading(true); // Show the "Typing..." indicator
 
-            let aiPrompt = prompt; // Default prompt
-            let foundPolicy = null;
+            let aiPrompt = prompt; // Default prompt to send to the AI
+            let foundPolicy = null; // Flag to track if a relevant policy was found
 
-            // Check if the user's prompt contains keywords related to any HR policy
+            // Convert user prompt to lowercase for case-insensitive keyword matching
             const lowerCasePrompt = prompt.toLowerCase();
+
+            // Iterate through the HR policies to find a match based on keywords
             for (const policyName in hrPolicies) {
                 const policy = hrPolicies[policyName];
                 for (const keyword of policy.keywords) {
                     if (lowerCasePrompt.includes(keyword)) {
                         foundPolicy = policy;
-                        // If a policy is found, construct a specific prompt for the AI
+                        // If a policy is found, construct a more specific prompt for the AI.
+                        // This instructs the AI to answer *only* based on the provided policy content.
                         aiPrompt = `Based *only* on the following HR policy information, answer the user's question. If the information does not contain the answer, state that you cannot find the answer in the provided policy.
 
                         HR Policy:
                         ${policy.content}
 
                         User's Question: "${prompt}"`;
-                        break; // Found a matching policy, stop checking keywords
+                        break; // Stop checking keywords once a match is found for this policy
                     }
                 }
-                if (foundPolicy) break; // Stop checking policies
+                if (foundPolicy) break; // Stop checking policies once a match is found
             }
 
-            // Add user's prompt (or the enhanced AI prompt) to chat history
+            // Add the user's prompt (which might be augmented with policy content) to the chat history
             chatHistory.push({ role: "user", parts: [{ text: aiPrompt }] });
 
             try {
-                // --- IMPORTANT: For hosting on GitHub Pages, you MUST replace this with your actual Gemini API Key ---
-                // Get your API key from Google AI Studio: https://aistudio.google.com/app/apikey
-                // For production, use a backend proxy to keep your API key secure.
-                const apiKey = "AIzaSyDiXMpZhxA6powhmGwEKxPzZDYHbbG4Jz4"; // Replace with your actual API Key
+                // --- IMPORTANT: Replace "YOUR_GEMINI_API_KEY_HERE" with your actual Gemini API Key ---
+                // You can get your API key from Google AI Studio: https://aistudio.google.com/app/apikey
+                // For production applications, it is strongly recommended to use a backend proxy
+                // to keep your API key secure and not expose it in client-side code.
+                const apiKey = "AIzaSyDiXMpZhxA6powhmGwEKxPzZDYHbbG4Jz4"; // <--- REPLACE THIS WITH YOUR API KEY
 
-                if (!apiKey || apiKey === "AIzaSyDiXMpZhxA6powhmGwEKxPzZDYHbbG4Jz4") {
-                    console.error("API Key is missing or not replaced. Please get your API key from Google AI Studio and replace 'AIzaSyDiXMpZhxA6powhmGwEKxPzZDYHbbG4Jz4' in the code.");
-                    displayMessage('Error: Gemini API Key is missing. Please check the console for instructions.', 'bot');
+                // Check if the API key is still the placeholder
+                if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
+                    console.error("API Key is missing or not replaced. Please get your API key from Google AI Studio and replace 'YOUR_GEMINI_API_KEY_HERE' in the code.");
+                    displayMessage('<span class="font-bold text-red-600">Error:</span> Gemini API Key is missing or invalid. Please check the browser console (F12) for instructions on how to set it up.', 'bot');
                     chatHistory.push({ role: "model", parts: [{ text: 'Error: Gemini API Key is missing. Please check the console for instructions.' }] });
-                    toggleLoading(false);
-                    return;
+                    toggleLoading(false); // Hide loading indicator and re-enable input
+                    return; // Stop execution if API key is not set
                 }
 
+                // Construct the API URL for Gemini-2.0-flash model
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
+                // Prepare the payload for the API request, including the chat history
                 const payload = { contents: chatHistory };
 
+                // Make the fetch call to the Gemini API
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
+                // Handle non-OK HTTP responses (e.g., 401, 403, 500)
                 if (!response.ok) {
                     const errorData = await response.json();
                     console.error('API Error:', errorData);
-                    // Provide a more specific message if it's an API key related error (e.g., 403 Forbidden)
+                    let errorMessage = 'Oops! Something went wrong with the AI service. Please try again later.';
                     if (response.status === 403 || response.status === 401) {
-                        displayMessage('Authentication Error: Please check your Gemini API Key. It might be invalid or missing permissions.', 'bot');
-                        chatHistory.push({ role: "model", parts: [{ text: 'Authentication Error: Please check your Gemini API Key. It might be invalid or missing permissions.' }] });
-                    } else {
-                        displayMessage('Oops! Something went wrong with the AI service. Please try again later.', 'bot');
-                        chatHistory.push({ role: "model", parts: [{ text: 'Oops! Something went wrong with the AI service. Please try again later.' }] }]);
+                        errorMessage = 'Authentication Error: Please check your Gemini API Key. It might be invalid or missing permissions.';
                     }
+                    displayMessage(errorMessage, 'bot');
+                    chatHistory.push({ role: "model", parts: [{ text: errorMessage }] });
                     return;
                 }
 
+                // Parse the JSON response from the API
                 const result = await response.json();
 
-                let botResponseText = 'I am sorry, I could not generate a response at this time.';
+                let botResponseText = 'I am sorry, I could not generate a response at this time. Please try again or rephrase your question.';
 
+                // Extract the generated text from the API response
                 if (result.candidates && result.candidates.length > 0 &&
                     result.candidates[0].content && result.candidates[0].content.parts &&
                     result.candidates[0].content.parts.length > 0) {
@@ -294,27 +326,28 @@
                     botResponseText = 'I received an unexpected response from the AI. Please try rephrasing your question.';
                 }
 
-                displayMessage(botResponseText, 'bot'); // Display bot's response
-                chatHistory.push({ role: "model", parts: [{ text: botResponseText }] }); // Add to chat history
+                displayMessage(botResponseText, 'bot'); // Display the AI's response in the chat
+                chatHistory.push({ role: "model", parts: [{ text: botResponseText }] }); // Add AI's response to chat history
 
             } catch (error) {
+                // Catch any network errors or other exceptions during the fetch operation
                 console.error('Error fetching AI response:', error);
                 displayMessage('An error occurred while connecting to the AI. Please check your network connection.', 'bot');
                 chatHistory.push({ role: "model", parts: [{ text: 'An error occurred while connecting to the AI. Please check your network connection.' }] });
             } finally {
-                toggleLoading(false); // Hide loading indicator
+                toggleLoading(false); // Hide the "Typing..." indicator and re-enable input
             }
         }
 
-        // Event Listeners
-        sendButton.addEventListener('click', sendMessage);
+        // Event Listeners for sending messages
+        sendButton.addEventListener('click', sendMessage); // Send message on button click
         userInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter') { // Send message on Enter key press
                 sendMessage();
             }
         });
 
-        // Focus on the input field when the page loads
+        // Focus on the input field when the page loads for immediate interaction
         window.onload = () => {
             userInput.focus();
         };
