@@ -44,7 +44,7 @@
             <!-- Initial welcome message from the bot -->
             <div class="flex justify-start">
                 <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] shadow-sm">
-                    Hello! I'm your HR Assistant. How can I help you today? Try asking about "leave policy", "expense claims", or "work from home".
+                    Hello! I'm your HR Assistant. How can I help you today?.
                     <br><br>
                     <span class="font-bold text-red-600">IMPORTANT:</span> For this chatbot to work on your website, you MUST replace "YOUR_GEMINI_API_KEY_HERE" in the code with your actual Gemini API key.
                 </div>
@@ -195,14 +195,9 @@
             messageDiv.classList.add('flex', sender === 'user' ? 'justify-end' : 'justify-start');
 
             const messageBubble = document.createElement('div');
-            // Apply Tailwind classes for message bubble styling
-            messageBubble.classList.add(
-                'p-3',
-                'rounded-lg',
-                'max-w-[80%]', /* Limit bubble width */
-                'shadow-sm', /* Subtle shadow for depth */
-                sender === 'user' ? 'bg-indigo-600 text-white' : 'bg-blue-100 text-blue-800'
-            );
+            // Set the entire className string directly to avoid InvalidCharacterError
+            messageBubble.className = `p-3 rounded-lg max-w-[80%] shadow-sm ${sender === 'user' ? 'bg-indigo-600 text-white' : 'bg-blue-100 text-blue-800'}`;
+            
             messageBubble.innerHTML = message; // Use innerHTML to render Markdown (e.g., bold text)
             messageDiv.appendChild(messageBubble);
             chatMessages.appendChild(messageDiv);
