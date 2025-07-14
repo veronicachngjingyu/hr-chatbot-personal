@@ -42,7 +42,7 @@
             <!-- Initial Bot Message -->
             <div class="flex justify-start">
                 <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] shadow-sm">
-                    Hello! I'm your HR Assistant. How can I help you today?
+                    Hello! I'm your HR Assistant. How can I help you today? Try asking about "leave policy", "expense claims", or "birthday leave".
                 </div>
             </div>
         </div>
@@ -83,6 +83,67 @@
         // Initialize chat history for the AI model
         let chatHistory = [];
 
+        // --- HR Policies Knowledge Base ---
+        // This is a simple, hardcoded knowledge base for demonstration.
+        // In a real application, this data would come from a database or external HR system.
+        const hrPolicies = {
+            "leave policy": {
+                keywords: ["leave", "vacation", "sick leave", "annual leave", "time off"],
+                content: `
+                    **Annual Leave Policy:** Employees are entitled to 20 days of annual leave per calendar year, accrued monthly.
+                    **Sick Leave Policy:** Employees are entitled to 10 days of paid sick leave per calendar year. A medical certificate is required for absences exceeding 3 consecutive days.
+                    **Bereavement Leave:** Up to 5 days of paid leave for immediate family members.
+                    **Requesting Leave:** All leave requests must be submitted through the HR portal at least 2 weeks in advance for annual leave.
+                `
+            },
+            "expense claims": {
+                keywords: ["expense", "reimbursement", "claim", "travel expenses"],
+                content: `
+                    **Expense Claim Policy:** Employees can claim reimbursement for business-related expenses.
+                    **Procedure:** All claims must be submitted within 30 days of the expense incurrence via the company's expense management system. Original receipts are mandatory.
+                    **Approval:** Claims require approval from your direct manager.
+                    **Categories:** Common categories include travel, meals (within policy limits), and office supplies.
+                `
+            },
+            "code of conduct": {
+                keywords: ["code of conduct", "ethics", "behavior", "rules"],
+                content: `
+                    **Code of Conduct Policy:** Our company is committed to maintaining a respectful, safe, and ethical work environment.
+                    **Key Principles:** This includes treating colleagues with respect, maintaining confidentiality, avoiding conflicts of interest, and adhering to all company policies and laws.
+                    **Reporting Violations:** Any suspected violations should be reported to HR or a manager immediately.
+                `
+            },
+            "birthday leave": {
+                keywords: ["birthday leave", "birthday off", "birthday holiday"],
+                content: `
+                    **Birthday Leave Policy:** Employees are entitled to 1 day of paid leave for their birthday each calendar year.
+                    **Usage:** This leave must be taken within the month of your birthday. Please coordinate with your manager.
+                `
+            },
+            "parent care leave": {
+                keywords: ["parent care leave", "elderly care leave", "caring for parents"],
+                content: `
+                    **Parent Care Leave Policy:** Employees are entitled to 3 days of paid leave per calendar year to care for their parents or elderly dependents.
+                    **Purpose:** This leave is for situations requiring direct care, such as medical appointments or emergencies.
+                `
+            },
+            "maternity leave": {
+                keywords: ["maternity leave", "new mother leave", "pregnancy leave"],
+                content: `
+                    **Maternity Leave Policy:** Expectant mothers are entitled to 16 weeks of paid maternity leave.
+                    **Eligibility:** Specific eligibility criteria apply, including length of service. Please consult HR for full details.
+                `
+            },
+            "shared parental leave": {
+                keywords: ["shared parental leave", "paternity leave", "new parent leave", "shared leave"],
+                content: `
+                    **Shared Parental Leave Policy:** Eligible parents can share up to 6 weeks of their parental leave entitlement.
+                    **Flexibility:** This allows parents to share care for their child in the first year after birth or adoption.
+                    **Application:** Joint application with your partner is required. Please contact HR for detailed guidance.
+                `
+            }
+        };
+
         /**
          * Displays a message in the chat interface.
          * @param {string} message - The message content.
@@ -100,7 +161,7 @@
                 'shadow-sm',
                 sender === 'user' ? 'bg-indigo-600 text-white' : 'bg-blue-100 text-blue-800'
             );
-            messageBubble.textContent = message;
+            messageBubble.innerHTML = message; // Use innerHTML to render bold text from policies
             messageDiv.appendChild(messageBubble);
             chatMessages.appendChild(messageDiv);
 
@@ -133,10 +194,37 @@
             if (prompt === '') return; // Don't send empty messages
 
             displayMessage(prompt, 'user'); // Display user's message
-            chatHistory.push({ role: "user", parts: [{ text: prompt }] }); // Add to chat history
             userInput.value = ''; // Clear input field
 
             toggleLoading(true); // Show loading indicator
+
+            let aiPrompt = prompt; // Default prompt
+            let foundPolicy = null;
+
+            // Check if the user's prompt contains keywords related to any HR policy
+            const lowerCasePrompt = prompt.toLowerCase();
+            for (const policyName in hrPolicies) {
+                const policy = hrPolicies[policyName];
+                for (const keyword of policy.keywords) {
+                    if (lowerCasePrompt.includes(keyword)) {
+                        foundPolicy = policy;
+                        // If a policy is found, construct a specific prompt for the AI
+                        aiPrompt = `Based *only* on the following HR policy information, answer the user's question. If the information does not contain the answer, state that you cannot find the answer in the provided policy.
+
+                        HR Policy:
+                        ${policy.content}
+
+                        User's Question: "${prompt}"`;
+                        break; // Found a matching policy, stop checking keywords
+                    }
+                }
+                if (foundPolicy) break; // Stop checking policies
+            }
+
+            // Add user's prompt (or the enhanced AI prompt) to chat history
+            // Only add the full AI prompt if a policy was found, otherwise just the user's original prompt.
+            // This helps keep the chat history more concise for general queries.
+            chatHistory.push({ role: "user", parts: [{ text: aiPrompt }] });
 
             try {
                 const apiKey = ""; // API key is automatically provided in runtime by Canvas
