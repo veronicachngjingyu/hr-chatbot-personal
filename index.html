@@ -44,9 +44,7 @@
             <!-- Initial welcome message from the bot -->
             <div class="flex justify-start">
                 <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] shadow-sm">
-                    Hello! I'm your HR Assistant. How can I help you today?.
-                    <br><br>
-                    <span class="font-bold text-red-600">IMPORTANT:</span> For this chatbot to work on your website, you MUST replace "YOUR_GEMINI_API_KEY_HERE" in the code with your actual Gemini API key.
+                    Hello! I'm your HR Assistant. How can I help you today?
                 </div>
             </div>
         </div>
@@ -138,28 +136,28 @@
                 `
             },
             "birthday leave": {
-                keywords: ["birthday leave", "birthday off", "birthday holiday", "my birthday"],
+                keywords: ["birthday leave", "birthday off", "birthday holiday", "my birthday", "birthday", "when is my birthday leave"],
                 content: `
                     **Birthday Leave Policy:** Employees are entitled to 1 day of paid leave for their birthday each calendar year.
                     **Usage:** This leave must be taken within the month of your birthday. Please coordinate with your manager.
                 `
             },
             "parent care leave": {
-                keywords: ["parent care leave", "elderly care leave", "caring for parents", "sick parent"],
+                keywords: ["parent care leave", "elderly care leave", "caring for parents", "sick parent", "parent care", "parents care", "care for parents", "elderly"],
                 content: `
                     **Parent Care Leave Policy:** Employees are entitled to 3 days of paid leave per calendar year to care for their parents or elderly dependents.
                     **Purpose:** This leave is for situations requiring direct care, such as medical appointments or emergencies.
                 `
             },
             "maternity leave": {
-                keywords: ["maternity leave", "new mother leave", "pregnancy leave", "expecting a baby"],
+                keywords: ["maternity leave", "new mother leave", "pregnancy leave", "expecting a baby", "maternity"],
                 content: `
                     **Maternity Leave Policy:** Expectant mothers are entitled to 16 weeks of paid maternity leave.
                     **Eligibility:** Specific eligibility criteria apply, including length of service. Please consult HR for full details.
                 `
             },
             "shared parental leave": {
-                keywords: ["shared parental leave", "paternity leave", "new parent leave", "shared leave", "parental leave"],
+                keywords: ["shared parental leave", "paternity leave", "new parent leave", "shared leave", "parental leave", "shared parental"],
                 content: `
                     **Shared Parental Leave Policy:** Eligible parents can share up to 6 weeks of their parental leave entitlement.
                     **Flexibility:** This allows parents to share care for their child in the first year after birth or adoption.
@@ -167,7 +165,7 @@
                 `
             },
             "medical benefits": {
-                keywords: ["medical benefits", "health insurance", "doctor visit", "dental", "vision"],
+                keywords: ["medical benefits", "health insurance", "doctor visit", "dental", "vision", "benefits"],
                 content: `
                     **Medical Benefits Policy:** Our comprehensive medical benefits package includes health, dental, and vision insurance.
                     **Enrollment:** Enrollment typically occurs during your onboarding period or during annual open enrollment.
@@ -175,7 +173,7 @@
                 `
             },
             "performance review": {
-                keywords: ["performance review", "annual review", "feedback", "appraisal"],
+                keywords: ["performance review", "annual review", "feedback", "appraisal", "performance"],
                 content: `
                     **Performance Review Policy:** Performance reviews are conducted annually to assess employee performance, set goals, and discuss career development.
                     **Process:** This typically involves a self-assessment, manager review, and a one-on-one discussion.
