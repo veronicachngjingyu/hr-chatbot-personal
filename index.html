@@ -44,7 +44,9 @@
             <!-- Initial welcome message from the bot -->
             <div class="flex justify-start">
                 <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] shadow-sm">
-                    Hello! I'm your HR Assistant. How can I help you today?
+                    Hello! I'm your HR Assistant. How can I help you today? You can type your question or use the quick access buttons below.
+                    <br><br>
+                    <span class="font-bold text-red-600">IMPORTANT:</span> For this chatbot to work on your website, you MUST replace "YOUR_GEMINI_API_KEY_HERE" in the code with your actual Gemini API key.
                 </div>
             </div>
         </div>
@@ -55,6 +57,22 @@
                 <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
                 <span>Typing...</span>
             </div>
+        </div>
+
+        <!-- Quick Access Buttons -->
+        <div class="p-4 bg-white border-t border-gray-200 flex flex-wrap justify-center gap-2">
+            <button id="btn-company-values" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-200 text-sm">
+                Company Values
+            </button>
+            <button id="btn-hr-policies" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-200 text-sm">
+                HR Policies
+            </button>
+            <button id="btn-code-of-conduct" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-200 text-sm">
+                Code of Conduct
+            </button>
+            <button id="btn-claims-process" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg shadow-sm transition duration-200 text-sm">
+                Claims Process
+            </button>
         </div>
 
         <!-- Chat Input Area -->
@@ -82,6 +100,12 @@
         const sendButton = document.getElementById('send-button');
         const loadingIndicator = document.getElementById('loading-indicator');
 
+        // Get references to the new quick access buttons
+        const btnCompanyValues = document.getElementById('btn-company-values');
+        const btnHrPolicies = document.getElementById('btn-hr-policies');
+        const btnCodeOfConduct = document.getElementById('btn-code-of-conduct');
+        const btnClaimsProcess = document.getElementById('btn-claims-process');
+
         // Initialize chat history array to maintain conversation context for the AI model
         let chatHistory = [];
 
@@ -90,6 +114,32 @@
         // In a real-world application, this data would ideally be fetched from a secure database
         // or an external HR information system for better scalability and management.
         const hrPolicies = {
+            "hr policies overview": {
+                keywords: ["hr policies", "company policies", "policies overview", "what policies"],
+                content: `
+                    We have policies covering various aspects of your employment. Key areas include:
+                    - **Leave Policies:** Annual, Sick, Bereavement, Birthday, Parent Care, Maternity, Shared Parental Leave.
+                    - **Expense Claims:** Guidelines for business expense reimbursement.
+                    - **Code of Conduct:** Our ethical guidelines and expected behavior.
+                    - **Work From Home:** Remote work arrangements.
+                    - **Onboarding Process:** What to expect as a new hire.
+                    - **Medical Benefits:** Details on health, dental, and vision insurance.
+                    - **Performance Reviews:** Our process for performance assessment and development.
+                    Please ask me about a specific policy for more details.
+                `
+            },
+            "company values": {
+                keywords: ["company values", "our values", "core values", "values"],
+                content: `
+                    Our company is built on strong core values that guide our actions and decisions:
+                    - **Innovation:** Embracing new ideas and continuous improvement.
+                    - **Integrity:** Acting with honesty and strong moral principles.
+                    - **Collaboration:** Working together to achieve shared goals.
+                    - **Customer Focus:** Prioritizing the needs and satisfaction of our customers.
+                    - **Respect:** Valuing diversity and treating everyone with dignity.
+                    These values foster a positive and productive work environment.
+                `
+            },
             "leave policy": {
                 keywords: ["leave", "vacation", "sick leave", "annual leave", "time off", "days off"],
                 content: `
@@ -100,7 +150,7 @@
                 `
             },
             "expense claims": {
-                keywords: ["expense", "reimbursement", "claim", "travel expenses", "submit expenses"],
+                keywords: ["expense", "reimbursement", "claim", "travel expenses", "submit expenses", "claims process"],
                 content: `
                     **Expense Claim Policy:** Employees can claim reimbursement for business-related expenses.
                     **Procedure:** All claims must be submitted within 30 days of the expense incurrence via the company's expense management system. Original receipts are mandatory.
@@ -223,9 +273,11 @@
 
         /**
          * Sends the user's message to the AI and displays the response.
+         * This function is now also called by the quick access buttons.
+         * @param {string} [predefinedPrompt] - An optional prompt string if called from a button.
          */
-        async function sendMessage() {
-            const prompt = userInput.value.trim(); // Get user input and remove leading/trailing whitespace
+        async function sendMessage(predefinedPrompt = null) {
+            const prompt = predefinedPrompt || userInput.value.trim(); // Use predefined or user input
             if (prompt === '') return; // Do nothing if the input is empty
 
             displayMessage(prompt, 'user'); // Display the user's message in the chat
@@ -332,8 +384,14 @@
             }
         }
 
-        // Event Listeners for sending messages
-        sendButton.addEventListener('click', sendMessage); // Send message on button click
+        // Event Listeners for quick access buttons
+        btnCompanyValues.addEventListener('click', () => sendMessage("What are the company values?"));
+        btnHrPolicies.addEventListener('click', () => sendMessage("What are the HR policies?"));
+        btnCodeOfConduct.addEventListener('click', () => sendMessage("What is the code of conduct?"));
+        btnClaimsProcess.addEventListener('click', () => sendMessage("How do I submit an expense claim?"));
+
+        // Event Listeners for sending messages via input field
+        sendButton.addEventListener('click', () => sendMessage()); // Send message on button click
         userInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') { // Send message on Enter key press
                 sendMessage();
